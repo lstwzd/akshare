@@ -11,6 +11,7 @@ from functools import lru_cache
 import pandas as pd
 import requests
 
+import datetime
 
 @lru_cache()
 def __code_id_map_em() -> dict:
@@ -148,7 +149,11 @@ def stock_bid_ask_em(symbol: str = "000001") -> pd.DataFrame:
         "跌停": data_json["data"]["f52"],
         "外盘": data_json["data"]["f49"],
         "内盘": data_json["data"]["f161"],
+        "交易时间": data_json["data"]["f86"],
     }
+
+    tick_dict['交易时间'] = datetime.datetime.fromtimestamp(float(tick_dict['交易时间'])).strftime('%Y-%m-%d %H:%M:%S')
+
     temp_df = pd.DataFrame.from_dict(tick_dict, orient="index")
     temp_df.reset_index(inplace=True)
     temp_df.columns = ["item", "value"]
