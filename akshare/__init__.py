@@ -3215,6 +3215,16 @@ from akshare.stock_feature.stock_fhps_ths import stock_fhps_detail_ths
 from akshare.stock.stock_ask_bid_em import stock_bid_ask_em
 
 """
+新浪财经-行情报价
+"""
+from akshare.stock.stock_ask_bid_sina import stock_bid_ask_sina
+
+"""
+雪球-行情报价
+"""
+from akshare.stock.stock_ask_bid_xq import stock_bid_ask_xq
+
+"""
 同花顺-盈利预测
 """
 from akshare.stock_fundamental.stock_profit_forecast_ths import (
