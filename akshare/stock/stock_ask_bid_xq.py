@@ -123,6 +123,10 @@ def stock_bid_ask_xq(
         temp_df["item"] == "date_time", "value"
     ].apply(lambda x: _convert_timestamp(int(x)))
 
+    #保持与em, sina统一
+    temp_df['bid'] = temp_df['buy_1']
+    temp_df['ask'] = temp_df['sell_1']
+
     return temp_df
 
 

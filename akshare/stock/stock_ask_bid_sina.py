@@ -57,7 +57,7 @@ def stock_bid_ask_sina_df(symbol: str = "000001") -> pd.DataFrame:
     return
     -------
         DataFrame 实时交易数据
-              属性:0：name，股票名字
+        属性:0：name，股票名字
             1：open，今日开盘价
             2：pre_close，昨日收盘价
             3：price，当前价格
@@ -100,8 +100,11 @@ def stock_bid_ask_sina_df(symbol: str = "000001") -> pd.DataFrame:
     df = pd.DataFrame(data_list, columns=LIVE_DATA_COLS)
     df['date_time'] = df['date'] + ' ' + df['time']
     df = df.drop(['date', 'time'], axis=1)
+    df = df.apply(lambda x: round(float(x), 2) if (x.name != 'name' and x.name != 'date_time') else x)
     df = df.T.reset_index()
     df.columns = ["item", "value"]
+
+
 
     return df
 

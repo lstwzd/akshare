@@ -149,10 +149,23 @@ def stock_bid_ask_em(symbol: str = "000001") -> pd.DataFrame:
         "跌停": data_json["data"]["f52"],
         "外盘": data_json["data"]["f49"],
         "内盘": data_json["data"]["f161"],
-        "交易时间": data_json["data"]["f86"],
+        "date_time": data_json["data"]["f86"],
+
+
+        #保持与sina一致性
+        "name": data_json["data"]["f58"],
+        "open": data_json["data"]["f46"],
+        "pre_close": data_json["data"]["f60"],
+        "price": data_json["data"]["f43"],
+        "high": data_json["data"]["f44"],
+        "low": data_json["data"]["f45"],
+        "bid": data_json["data"]["f19"],
+        "ask": data_json["data"]["f39"],
+        "volumn": data_json["data"]["f47"],
+        "amount": data_json["data"]["f48"],
     }
 
-    tick_dict['交易时间'] = datetime.datetime.fromtimestamp(float(tick_dict['交易时间'])).strftime('%Y-%m-%d %H:%M:%S')
+    tick_dict['date_time'] = datetime.datetime.fromtimestamp(float(tick_dict['date_time'])).strftime('%Y-%m-%d %H:%M:%S')
 
     temp_df = pd.DataFrame.from_dict(tick_dict, orient="index")
     temp_df.reset_index(inplace=True)
