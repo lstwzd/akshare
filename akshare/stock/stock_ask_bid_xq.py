@@ -12,6 +12,33 @@ import requests
 
 from datetime import datetime
 
+INDEX_LABELS = ['SH', 'SZ', 'HS300', 'SZ50', 'CYB', 'ZXB', 'ZX300', 'ZH500']
+INDEX_LIST = {
+    'SH': 'SH000001',
+    'SZ': 'SZ399001',
+    'HS300': 'SH000300',
+    'SZ50': 'SH000016',
+    'CYB': 'SZ399006',
+    'ZXB': 'SZ399005',
+    'ZX300': 'SZ399008',
+    'ZH500': 'SH000905'
+}
+
+def _code_to_symbol(code):
+    '''
+        生成symbol代码标志
+    '''
+    if code in INDEX_LABELS:
+        return INDEX_LIST[code]
+    elif code[:3] == 'GB_':
+        return code
+    else:
+        if len(code) != 6 :
+            return code
+        else:
+            return 'SH%s'%code if code[:1] in ['5', '6', '9'] or code[:2] in ['11', '13'] else 'SZ%s'%code
+
+
 def _convert_timestamp(timestamp_ms):
     """
     将以毫秒为单位的时间戳转换为日期和时间，并保留到秒。
@@ -45,6 +72,8 @@ def stock_bid_ask_xq(
     :return: 证券最新行情
     :rtype: pandas.DataFrame
     """
+
+    symbol = _code_to_symbol(symbol)
 
     session = requests.Session()
     headers = {
@@ -101,5 +130,5 @@ if __name__ == "__main__":
     # stock_ask_bid_xq_df = stock_bid_ask_xq(symbol="SH600000")
     # print(stock_ask_bid_xq_df)
 
-    stock_ask_bid_xq_df = stock_bid_ask_xq(symbol="SZ000001")
+    stock_ask_bid_xq_df = stock_bid_ask_xq(symbol="000001")
     print(stock_ask_bid_xq_df)
