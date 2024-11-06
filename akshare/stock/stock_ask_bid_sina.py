@@ -46,7 +46,7 @@ def _random(n=13):
     return str(randint(start, end))
 
 
-def stock_bid_ask_sina_df(symbol: str = "000001") -> pd.DataFrame:
+def stock_bid_ask_sina(symbol: str = "000001") -> pd.DataFrame:
     """
         获取实时交易数据 getting real time quotes data
         用于跟踪交易情况（本次执行的结果-上一次执行的数据）
@@ -110,5 +110,5 @@ def stock_bid_ask_sina_df(symbol: str = "000001") -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    stock_bid_ask_sina_df = stock_bid_ask_sina_df(symbol="000001")
-    print(stock_bid_ask_sina_df)
+    stock_bid_ask_sina = stock_bid_ask_sina(symbol="000001")
+    print(stock_bid_ask_sina)
