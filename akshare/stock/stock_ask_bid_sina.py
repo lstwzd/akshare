@@ -67,7 +67,7 @@ def stock_bid_ask_sina(symbol: str = "000001") -> pd.DataFrame:
             7：ask，竞卖价，即“卖一”报价
             8：volumn，成交量 maybe you need do volumn/100
             9：amount，成交金额（元 CNY）
-            10：buy_1_vol，委买一（笔数 bid volume）
+            10：buy_1_vol，委买一（笔数 bid volumn）
             11：buy_1，委买一（价格 bid price）
             12：buy_2_vol，“买二”
             13：buy_2，“买二”
@@ -77,7 +77,7 @@ def stock_bid_ask_sina(symbol: str = "000001") -> pd.DataFrame:
             17：buy_4，“买四”
             18：buy_5_vol，“买五”
             19：buy_5，“买五”
-            20：sell_1_vol，委卖一（笔数 ask volume）
+            20：sell_1_vol，委卖一（笔数 ask volumn）
             21：sell_1，委卖一（价格 ask price）
             ...
             30：date_time，日期；

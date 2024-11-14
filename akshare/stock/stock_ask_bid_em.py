@@ -161,7 +161,7 @@ def stock_bid_ask_em(symbol: str = "000001") -> pd.DataFrame:
         "low": data_json["data"]["f45"],
         "bid": data_json["data"]["f19"],
         "ask": data_json["data"]["f39"],
-        "volumn": data_json["data"]["f47"],
+        "volume": data_json["data"]["f47"],
         "amount": data_json["data"]["f48"],
     }
 
