@@ -13,6 +13,9 @@ import requests
 
 import datetime
 
+from akshare.utils import demjson
+from akshare.utils.cons import headers
+
 @lru_cache()
 def __code_id_map_em() -> dict:
     """
@@ -86,6 +89,25 @@ def __code_id_map_em() -> dict:
     return code_id_dict
 
 
+@lru_cache()
+def __fund_id_map_em() -> dict:
+    """
+    东方财富网站-天天基金网-基金数据-所有基金的名称和类型
+    https://fund.eastmoney.com/manager/default.html#dt14;mcreturnjson;ftall;pn20;pi1;scabbname;stasc
+    :return: 所有基金的名称和类型
+    :rtype: pandas.DataFrame
+    """
+    url = "https://fund.eastmoney.com/js/fundcode_search.js"
+    r = requests.get(url, headers=headers)
+    text_data = r.text
+    data_json = demjson.decode(text_data.strip("var r = ")[:-1])
+    temp_df = pd.DataFrame(data_json)
+    temp_df.columns = ["基金代码", "拼音缩写", "基金简称", "基金类型", "拼音全称"]
+    temp_df["bj_id"] = 0
+    code_id_dict = dict(zip(temp_df["基金代码"], temp_df["bj_id"]))
+    return code_id_dict
+
+
 def stock_bid_ask_em(symbol: str = "000001") -> pd.DataFrame:
     """
     东方财富-行情报价
@@ -97,6 +119,7 @@ def stock_bid_ask_em(symbol: str = "000001") -> pd.DataFrame:
     """
     url = "https://push2.eastmoney.com/api/qt/stock/get"
     code_id_map_em_dict = __code_id_map_em()
+    code_id_map_em_dict.update(__fund_id_map_em())
     params = {
         "fltt": "2",
         "invt": "2",
@@ -174,5 +197,5 @@ def stock_bid_ask_em(symbol: str = "000001") -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    stock_bid_ask_em_df = stock_bid_ask_em(symbol="000001")
+    stock_bid_ask_em_df = stock_bid_ask_em(symbol="159330")
     print(stock_bid_ask_em_df)

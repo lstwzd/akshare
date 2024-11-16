@@ -110,5 +110,5 @@ def stock_bid_ask_sina(symbol: str = "000001") -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    stock_bid_ask_sina = stock_bid_ask_sina(symbol="000001")
+    stock_bid_ask_sina = stock_bid_ask_sina(symbol="159330")
     print(stock_bid_ask_sina)
