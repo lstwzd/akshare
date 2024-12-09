@@ -2905,7 +2905,7 @@ amac_manager_cancelled_info # 中国证券投资基金业协会-信息公示-诚
 1.14.92 add: add qdii_a_index_jsl interface
 """
 
-__version__ = "1.14.92"
+__version__ = "1.14.92.3"
 __author__ = "AKFamily"
 
 import sys
