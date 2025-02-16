@@ -11,6 +11,8 @@ from functools import lru_cache
 import pandas as pd
 import requests
 
+from akshare.utils import demjson
+from akshare.utils.cons import headers
 
 def stock_zh_a_spot_em() -> pd.DataFrame:
     """
@@ -126,6 +128,8 @@ def stock_zh_a_spot_em() -> pd.DataFrame:
     )
     return temp_df
 
+from akshare.utils import demjson
+from akshare.utils.cons import headers
 
 def stock_sh_a_spot_em() -> pd.DataFrame:
     """
@@ -241,6 +245,8 @@ def stock_sh_a_spot_em() -> pd.DataFrame:
     )
     return temp_df
 
+from akshare.utils import demjson
+from akshare.utils.cons import headers
 
 def stock_sz_a_spot_em() -> pd.DataFrame:
     """
@@ -356,6 +362,8 @@ def stock_sz_a_spot_em() -> pd.DataFrame:
     )
     return temp_df
 
+from akshare.utils import demjson
+from akshare.utils.cons import headers
 
 def stock_bj_a_spot_em() -> pd.DataFrame:
     """
@@ -471,6 +479,8 @@ def stock_bj_a_spot_em() -> pd.DataFrame:
     )
     return temp_df
 
+from akshare.utils import demjson
+from akshare.utils.cons import headers
 
 def stock_new_a_spot_em() -> pd.DataFrame:
     """
@@ -938,6 +948,42 @@ def stock_zh_b_spot_em() -> pd.DataFrame:
     )
     return temp_df
 
+
+@lru_cache()
+def fund_id_map_em() -> dict:
+    """
+    东方财富网站-天天基金网-基金数据-所有基金的名称和类型
+    https://fund.eastmoney.com/manager/default.html#dt14;mcreturnjson;ftall;pn20;pi1;scabbname;stasc
+    :return: 所有基金的名称和类型
+    :rtype: pandas.DataFrame
+    """
+    url = "https://fund.eastmoney.com/js/fundcode_search.js"
+    r = requests.get(url, headers=headers)
+    text_data = r.text
+    data_json = demjson.decode(text_data.strip("var r = ")[:-1])
+    temp_df = pd.DataFrame(data_json)
+    temp_df.columns = ["基金代码", "拼音缩写", "基金简称", "基金类型", "拼音全称"]
+    temp_df["bj_id"] = 0
+    code_id_dict = dict(zip(temp_df["基金代码"], temp_df["bj_id"]))
+    return code_id_dict
+
+@lru_cache()
+def fund_id_map_em() -> dict:
+    """
+    东方财富网站-天天基金网-基金数据-所有基金的名称和类型
+    https://fund.eastmoney.com/manager/default.html#dt14;mcreturnjson;ftall;pn20;pi1;scabbname;stasc
+    :return: 所有基金的名称和类型
+    :rtype: pandas.DataFrame
+    """
+    url = "https://fund.eastmoney.com/js/fundcode_search.js"
+    r = requests.get(url, headers=headers)
+    text_data = r.text
+    data_json = demjson.decode(text_data.strip("var r = ")[:-1])
+    temp_df = pd.DataFrame(data_json)
+    temp_df.columns = ["基金代码", "拼音缩写", "基金简称", "基金类型", "拼音全称"]
+    temp_df["bj_id"] = 0
+    code_id_dict = dict(zip(temp_df["基金代码"], temp_df["bj_id"]))
+    return code_id_dict
 
 @lru_cache()
 def code_id_map_em() -> dict:
