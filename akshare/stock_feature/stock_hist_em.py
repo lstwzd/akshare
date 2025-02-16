@@ -980,24 +980,6 @@ def fund_id_map_em() -> dict:
     return code_id_dict
 
 @lru_cache()
-def fund_id_map_em() -> dict:
-    """
-    东方财富网站-天天基金网-基金数据-所有基金的名称和类型
-    https://fund.eastmoney.com/manager/default.html#dt14;mcreturnjson;ftall;pn20;pi1;scabbname;stasc
-    :return: 所有基金的名称和类型
-    :rtype: pandas.DataFrame
-    """
-    url = "https://fund.eastmoney.com/js/fundcode_search.js"
-    r = requests.get(url, headers=headers)
-    text_data = r.text
-    data_json = demjson.decode(text_data.strip("var r = ")[:-1])
-    temp_df = pd.DataFrame(data_json)
-    temp_df.columns = ["基金代码", "拼音缩写", "基金简称", "基金类型", "拼音全称"]
-    temp_df["bj_id"] = 0
-    code_id_dict = dict(zip(temp_df["基金代码"], temp_df["bj_id"]))
-    return code_id_dict
-
-@lru_cache()
 def code_id_map_em() -> dict:
     """
     东方财富-股票和市场代码
@@ -1132,6 +1114,8 @@ def stock_zh_a_hist(
     :rtype: pandas.DataFrame
     """
     code_id_dict = code_id_map_em()
+    code_id_dict.update(fund_id_map_em())
+
     adjust_dict = {"qfq": "1", "hfq": "2", "": "0"}
     period_dict = {"daily": "101", "weekly": "102", "monthly": "103"}
     url = "https://push2his.eastmoney.com/api/qt/stock/kline/get"
@@ -1220,6 +1204,8 @@ def stock_zh_a_hist_min_em(
     :rtype: pandas.DataFrame
     """
     code_id_dict = code_id_map_em()
+    code_id_dict.update(fund_id_map_em())
+
     adjust_map = {
         "": "0",
         "qfq": "1",
@@ -1344,6 +1330,8 @@ def stock_zh_a_hist_pre_min_em(
     :rtype: pandas.DataFrame
     """
     code_id_dict = code_id_map_em()
+    code_id_dict.update(fund_id_map_em())
+
     url = "https://push2.eastmoney.com/api/qt/stock/trends2/get"
     params = {
         "fields1": "f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13",
