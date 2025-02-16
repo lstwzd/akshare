@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 """
-Date: 2024/3/26 17:30
+Date: 2025/2/15 22:00
 Desc: 东方财富-ETF行情
 https://quote.eastmoney.com/sh513500.html
 """
 
 from functools import lru_cache
-
+import math
 import pandas as pd
 import requests
+from akshare.utils.tqdm import get_tqdm
 
 
 @lru_cache()
@@ -23,7 +24,7 @@ def _fund_etf_code_id_map_em() -> dict:
     url = "https://88.push2.eastmoney.com/api/qt/clist/get"
     params = {
         "pn": "1",
-        "pz": "5000",
+        "pz": "200",
         "po": "1",
         "np": "1",
         "ut": "bd1d9ddb04089700cf9c27f6f7426281",
@@ -35,9 +36,22 @@ def _fund_etf_code_id_map_em() -> dict:
         "fields": "f12,f13",
         "_": "1672806290972",
     }
-    r = requests.get(url, timeout=15, params=params)
+    r = requests.get(url, params=params, timeout=15)
     data_json = r.json()
-    temp_df = pd.DataFrame(data_json["data"]["diff"])
+    total_page = math.ceil(data_json["data"]["total"] / 200)
+    temp_list = []
+    tqdm = get_tqdm()
+    for page in tqdm(range(1, total_page + 1), leave=False):
+        params.update(
+            {
+                "pn": page,
+            }
+        )
+        r = requests.get(url, params=params, timeout=15)
+        data_json = r.json()
+        inner_temp_df = pd.DataFrame(data_json["data"]["diff"])
+        temp_list.append(inner_temp_df)
+    temp_df = pd.concat(temp_list, ignore_index=True)
     temp_dict = dict(zip(temp_df["f12"], temp_df["f13"]))
     return temp_dict
 
@@ -52,7 +66,7 @@ def fund_etf_spot_em() -> pd.DataFrame:
     url = "https://88.push2.eastmoney.com/api/qt/clist/get"
     params = {
         "pn": "1",
-        "pz": "5000",
+        "pz": "200",
         "po": "1",
         "np": "1",
         "ut": "bd1d9ddb04089700cf9c27f6f7426281",
@@ -60,7 +74,7 @@ def fund_etf_spot_em() -> pd.DataFrame:
         "invt": "2",
         "wbp2u": "|0|0|0|web",
         "fid": "f3",
-        "fs": "b:MK0021,b:MK0022,b:MK0023,b:MK0024",
+        "fs": "b:MK0021,b:MK0022,b:MK0023,b:MK0024,b:MK0827",
         "fields": (
             "f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,"
             "f12,f13,f14,f15,f16,f17,f18,f20,f21,"
@@ -73,7 +87,20 @@ def fund_etf_spot_em() -> pd.DataFrame:
     }
     r = requests.get(url, timeout=15, params=params)
     data_json = r.json()
-    temp_df = pd.DataFrame(data_json["data"]["diff"])
+    total_page = math.ceil(data_json["data"]["total"] / 200)
+    temp_list = []
+    tqdm = get_tqdm()
+    for page in tqdm(range(1, total_page + 1), leave=False):
+        params.update(
+            {
+                "pn": page,
+            }
+        )
+        r = requests.get(url, params=params, timeout=15)
+        data_json = r.json()
+        inner_temp_df = pd.DataFrame(data_json["data"]["diff"])
+        temp_list.append(inner_temp_df)
+    temp_df = pd.concat(temp_list, ignore_index=True)
     temp_df.rename(
         columns={
             "f12": "代码",

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 """
-Date: 2024/8/18 17:30
+Date: 2024/11/22 21:30
 Desc: 首页-行情中心-涨停板行情-涨停股池
 https://quote.eastmoney.com/ztb/detail#type=ztgc
 
@@ -21,7 +21,7 @@ import pandas as pd
 import requests
 
 
-def stock_zt_pool_em(date: str = "20231129") -> pd.DataFrame:
+def stock_zt_pool_em(date: str = "20241008") -> pd.DataFrame:
     """
     东方财富网-行情中心-涨停板行情-涨停股池
     https://quote.eastmoney.com/ztb/detail#type=ztgc
@@ -122,7 +122,7 @@ def stock_zt_pool_previous_em(date: str = "20240415") -> pd.DataFrame:
         "ut": "7eea3edcaed734bea9cbfc24409ed989",
         "dpt": "wz.ztzt",
         "Pageindex": "0",
-        "pagesize": "170",
+        "pagesize": "5000",
         "sort": "zs:desc",
         "date": date,
         "_": "1621590489736",
@@ -186,7 +186,7 @@ def stock_zt_pool_previous_em(date: str = "20240415") -> pd.DataFrame:
     return temp_df
 
 
-def stock_zt_pool_strong_em(date: str = "20231129") -> pd.DataFrame:
+def stock_zt_pool_strong_em(date: str = "20241231") -> pd.DataFrame:
     """
     东方财富网-行情中心-涨停板行情-强势股池
     https://quote.eastmoney.com/ztb/detail#type=qsgc
@@ -200,7 +200,7 @@ def stock_zt_pool_strong_em(date: str = "20231129") -> pd.DataFrame:
         "ut": "7eea3edcaed734bea9cbfc24409ed989",
         "dpt": "wz.ztzt",
         "Pageindex": "0",
-        "pagesize": "170",
+        "pagesize": "5000",
         "sort": "zdp:desc",
         "date": date,
         "_": "1621590489736",
@@ -261,10 +261,22 @@ def stock_zt_pool_strong_em(date: str = "20231129") -> pd.DataFrame:
     ]
     temp_df["最新价"] = temp_df["最新价"] / 1000
     temp_df["涨停价"] = temp_df["涨停价"] / 1000
+    explained_map = {1: "60日新高", 2: "近期多次涨停", 3: "60日新高且近期多次涨停"}
+    temp_df["入选理由"] = temp_df["入选理由"].apply(lambda x: explained_map[x])
+    temp_df["是否新高"] = temp_df["是否新高"].apply(lambda x: "是" if x == 1 else "否")
+    temp_df["涨跌幅"] = pd.to_numeric(temp_df["涨跌幅"], errors="coerce")
+    temp_df["最新价"] = pd.to_numeric(temp_df["最新价"], errors="coerce")
+    temp_df["涨停价"] = pd.to_numeric(temp_df["涨停价"], errors="coerce")
+    temp_df["成交额"] = pd.to_numeric(temp_df["成交额"], errors="coerce")
+    temp_df["流通市值"] = pd.to_numeric(temp_df["流通市值"], errors="coerce")
+    temp_df["总市值"] = pd.to_numeric(temp_df["总市值"], errors="coerce")
+    temp_df["换手率"] = pd.to_numeric(temp_df["换手率"], errors="coerce")
+    temp_df["涨速"] = pd.to_numeric(temp_df["涨速"], errors="coerce")
+    temp_df["量比"] = pd.to_numeric(temp_df["量比"], errors="coerce")
     return temp_df
 
 
-def stock_zt_pool_sub_new_em(date: str = "20231129") -> pd.DataFrame:
+def stock_zt_pool_sub_new_em(date: str = "20241231") -> pd.DataFrame:
     """
     东方财富网-行情中心-涨停板行情-次新股池
     https://quote.eastmoney.com/ztb/detail#type=cxgc
@@ -278,7 +290,7 @@ def stock_zt_pool_sub_new_em(date: str = "20231129") -> pd.DataFrame:
         "ut": "7eea3edcaed734bea9cbfc24409ed989",
         "dpt": "wz.ztzt",
         "Pageindex": "0",
-        "pagesize": "170",
+        "pagesize": "5000",
         "sort": "ods:asc",
         "date": date,
         "_": "1621590489736",
@@ -339,13 +351,14 @@ def stock_zt_pool_sub_new_em(date: str = "20231129") -> pd.DataFrame:
     temp_df["最新价"] = temp_df["最新价"] / 1000
     temp_df["涨停价"] = temp_df["涨停价"] / 1000
     temp_df.loc[temp_df["涨停价"] > 100000, "涨停价"] = pd.NA
-    temp_df["开板日期"] = pd.to_datetime(temp_df["开板日期"], format="%Y%m%d")
-    temp_df["上市日期"] = pd.to_datetime(temp_df["上市日期"], format="%Y%m%d")
+    temp_df["开板日期"] = pd.to_datetime(temp_df["开板日期"], format="%Y%m%d").dt.date
+    temp_df["上市日期"] = pd.to_datetime(temp_df["上市日期"], format="%Y%m%d").dt.date
     temp_df.loc[temp_df["上市日期"] == 0, "上市日期"] = pd.NaT
+    temp_df["是否新高"] = temp_df["是否新高"].apply(lambda x: "是" if x == 1 else "否")
     return temp_df
 
 
-def stock_zt_pool_zbgc_em(date: str = "20231129") -> pd.DataFrame:
+def stock_zt_pool_zbgc_em(date: str = "20241011") -> pd.DataFrame:
     """
     东方财富网-行情中心-涨停板行情-炸板股池
     https://quote.eastmoney.com/ztb/detail#type=zbgc
@@ -364,7 +377,7 @@ def stock_zt_pool_zbgc_em(date: str = "20231129") -> pd.DataFrame:
         "ut": "7eea3edcaed734bea9cbfc24409ed989",
         "dpt": "wz.ztzt",
         "Pageindex": "0",
-        "pagesize": "170",
+        "pagesize": "5000",
         "sort": "fbt:asc",
         "date": date,
         "_": "1621590489736",
@@ -428,7 +441,7 @@ def stock_zt_pool_zbgc_em(date: str = "20231129") -> pd.DataFrame:
     return temp_df
 
 
-def stock_zt_pool_dtgc_em(date: str = "20231129") -> pd.DataFrame:
+def stock_zt_pool_dtgc_em(date: str = "20241011") -> pd.DataFrame:
     """
     东方财富网-行情中心-涨停板行情-跌停股池
     https://quote.eastmoney.com/ztb/detail#type=dtgc
@@ -516,20 +529,20 @@ def stock_zt_pool_dtgc_em(date: str = "20231129") -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    stock_zt_pool_em_df = stock_zt_pool_em(date="20240801")
+    stock_zt_pool_em_df = stock_zt_pool_em(date="20241008")
     print(stock_zt_pool_em_df)
 
     stock_zt_pool_previous_em_df = stock_zt_pool_previous_em(date="20240415")
     print(stock_zt_pool_previous_em_df)
 
-    stock_zt_pool_strong_em_df = stock_zt_pool_strong_em(date="20240424")
+    stock_zt_pool_strong_em_df = stock_zt_pool_strong_em(date="20241231")
     print(stock_zt_pool_strong_em_df)
 
-    stock_zt_pool_sub_new_em_df = stock_zt_pool_sub_new_em(date="20240424")
+    stock_zt_pool_sub_new_em_df = stock_zt_pool_sub_new_em(date="20241231")
     print(stock_zt_pool_sub_new_em_df)
 
-    stock_zt_pool_zbgc_em_df = stock_zt_pool_zbgc_em(date="20240424")
+    stock_zt_pool_zbgc_em_df = stock_zt_pool_zbgc_em(date="20241011")
     print(stock_zt_pool_zbgc_em_df)
 
-    stock_zt_pool_dtgc_em_df = stock_zt_pool_dtgc_em(date="20240424")
+    stock_zt_pool_dtgc_em_df = stock_zt_pool_dtgc_em(date="20241011")
     print(stock_zt_pool_dtgc_em_df)
