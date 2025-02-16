@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # -*- coding:utf-8 -*-
 """
-Date: 2024/9/4 19:30
+Date: 2024/12/18 17:50
 Desc: 雪球-行情中心-个股
 https://xueqiu.com/S/SH513520
 """
@@ -13,28 +13,23 @@ import pandas as pd
 import requests
 
 
-def _convert_timestamp(timestamp_ms):
+def _convert_timestamp(timestamp_ms: int) -> str:
     """
-    将以毫秒为单位的时间戳转换为日期和时间，并保留到秒。
-
-    参数:
-    timestamp_ms (int): 以毫秒为单位的时间戳
-
-    返回:
-    datetime: 对应的日期和时间，保留到秒
+    时间戳转换为字符串时间
+    :param timestamp_ms: 时间戳
+    :type timestamp_ms: int
+    :return: 字符串
+    :rtype: str
     """
-    # 将毫秒转换为秒
     timestamp_s = timestamp_ms / 1000
-
-    # 使用 fromtimestamp 方法将时间戳转换为 datetime 对象
     datetime_obj = datetime.fromtimestamp(timestamp_s)
-
     return datetime_obj.strftime("%Y-%m-%d %H:%M:%S")
 
 
 def stock_individual_spot_xq(
     symbol: str = "SH600000",
     timeout: float = None,
+    token: str = None,
 ) -> pd.DataFrame:
     """
     雪球-行情中心-个股
@@ -43,12 +38,15 @@ def stock_individual_spot_xq(
     :type symbol: str
     :param timeout: choice of None or a positive float number
     :type timeout: float
+    :param token: set xueqiu token
+    :type token: str
     :return: 证券最新行情
     :rtype: pandas.DataFrame
     """
     session = requests.Session()
+    xq_a_token = token or "b1d767edc014ddf478005982ba9e053910dad8dc"
     headers = {
-        "cookie": "xq_a_token=dbc1dc6d13bd101dd06f18c5b7f2fb2eb276fb5a;",
+        "cookie": f"xq_a_token={xq_a_token};",
         "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 "
         "(KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1",
     }
@@ -122,7 +120,6 @@ def stock_individual_spot_xq(
     temp_df.loc[temp_df["item"] == "时间", "value"] = temp_df.loc[
         temp_df["item"] == "时间", "value"
     ].apply(lambda x: _convert_timestamp(int(x)))
-
     return temp_df
 
 

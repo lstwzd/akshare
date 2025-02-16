@@ -41,7 +41,7 @@ def stock_financial_report_sina(
         "source": symbol_map[symbol],
         "type": "0",
         "page": "1",
-        "num": "100",
+        "num": "1000",
     }
     r = requests.get(url, params=params)
     data_json = r.json()
@@ -106,7 +106,7 @@ def stock_financial_abstract(symbol: str = "600004") -> pd.DataFrame:
         "source": "gjzb",
         "type": "0",
         "page": "1",
-        "num": "100",
+        "num": "1000",
     }
     r = requests.get(url, params=params)
     data_json = r.json()
@@ -201,6 +201,8 @@ def stock_financial_analysis_indicator(
     year_list = [item.text for item in year_context]
     if start_year in year_list:
         year_list = year_list[: year_list.index(start_year) + 1]
+    else:
+        return pd.DataFrame()
     out_df = pd.DataFrame()
     tqdm = get_tqdm()
     for year_item in tqdm(year_list, leave=False):
@@ -713,11 +715,11 @@ if __name__ == "__main__":
     )
     print(stock_financial_report_sina_df)
 
-    stock_financial_abstract_df = stock_financial_abstract(symbol="600004")
+    stock_financial_abstract_df = stock_financial_abstract(symbol="600600")
     print(stock_financial_abstract_df)
 
     stock_financial_analysis_indicator_df = stock_financial_analysis_indicator(
-        symbol="600004", start_year="2020"
+        symbol="600004", start_year="2024"
     )
     print(stock_financial_analysis_indicator_df)
 

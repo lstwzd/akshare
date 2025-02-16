@@ -6,12 +6,15 @@ Desc: 东方财富网-数据中心-资金流向
 https://data.eastmoney.com/zjlx/detail.html
 """
 
+import math
 import json
 import time
 from functools import lru_cache
 
 import pandas as pd
 import requests
+
+from akshare.utils.tqdm import get_tqdm
 
 
 def stock_individual_fund_flow(
@@ -147,7 +150,7 @@ def stock_individual_fund_flow_rank(indicator: str = "5日") -> pd.DataFrame:
     params = {
         "fid": indicator_map[indicator][0],
         "po": "1",
-        "pz": "10000",
+        "pz": "200",
         "pn": "1",
         "np": "1",
         "fltt": "2",
@@ -158,7 +161,20 @@ def stock_individual_fund_flow_rank(indicator: str = "5日") -> pd.DataFrame:
     }
     r = requests.get(url, params=params)
     data_json = r.json()
-    temp_df = pd.DataFrame(data_json["data"]["diff"])
+    total_page = math.ceil(data_json["data"]["total"] / 200)
+    temp_list = []
+    tqdm = get_tqdm()
+    for page in tqdm(range(1, total_page + 1), leave=False):
+        params.update(
+            {
+                "pn": page,
+            }
+        )
+        r = requests.get(url, params=params, timeout=15)
+        data_json = r.json()
+        inner_temp_df = pd.DataFrame(data_json["data"]["diff"])
+        temp_list.append(inner_temp_df)
+    temp_df = pd.concat(temp_list, ignore_index=True)
     temp_df.reset_index(inplace=True)
     temp_df["index"] = range(1, len(temp_df) + 1)
     if indicator == "今日":
@@ -353,7 +369,7 @@ def stock_market_fund_flow() -> pd.DataFrame:
     }
     r = requests.get(url, params=params, headers=headers)
     text_data = r.text
-    json_data = json.loads(text_data[text_data.find("{"): -2])
+    json_data = json.loads(text_data[text_data.find("{") : -2])
     content_list = json_data["data"]["klines"]
     temp_df = pd.DataFrame([item.split(",") for item in content_list])
     temp_df.columns = [
@@ -484,7 +500,7 @@ def stock_sector_fund_flow_rank(
     }
     r = requests.get(url, params=params, headers=headers)
     text_data = r.text
-    json_data = json.loads(text_data[text_data.find("{"): -2])
+    json_data = json.loads(text_data[text_data.find("{") : -2])
     temp_df = pd.DataFrame(json_data["data"]["diff"])
     if indicator == "今日":
         temp_df.columns = [
@@ -675,7 +691,7 @@ def stock_sector_fund_flow_summary(
         params = {
             "fid": "f62",
             "po": "1",
-            "pz": "50",
+            "pz": "500",
             "pn": "1",
             "np": "1",
             "fltt": "2",
@@ -764,7 +780,7 @@ def stock_sector_fund_flow_summary(
         params = {
             "fid": "f164",
             "po": "1",
-            "pz": "50",
+            "pz": "500",
             "pn": "1",
             "np": "1",
             "fltt": "2",
@@ -853,7 +869,7 @@ def stock_sector_fund_flow_summary(
         params = {
             "fid": "f174",
             "po": "1",
-            "pz": "50",
+            "pz": "500",
             "pn": "1",
             "np": "1",
             "fltt": "2",
@@ -1170,7 +1186,7 @@ def stock_main_fund_flow(symbol: str = "全部股票") -> pd.DataFrame:
     params = {
         "fid": "f184",
         "po": "1",
-        "pz": "50000",
+        "pz": "200",
         "pn": "1",
         "np": "1",
         "fltt": "2",
@@ -1181,8 +1197,21 @@ def stock_main_fund_flow(symbol: str = "全部股票") -> pd.DataFrame:
     }
     r = requests.get(url, params=params, timeout=15)
     data_json = r.json()
-    temp_df = pd.DataFrame(data_json["data"]["diff"])
-    temp_df.reset_index(inplace=True)
+    total_page = math.ceil(data_json["data"]["total"] / 200)
+    temp_list = []
+    tqdm = get_tqdm()
+    for page in tqdm(range(1, total_page + 1), leave=False):
+        params.update(
+            {
+                "pn": page,
+            }
+        )
+        r = requests.get(url, params=params, timeout=15)
+        data_json = r.json()
+        inner_temp_df = pd.DataFrame(data_json["data"]["diff"])
+        temp_list.append(inner_temp_df)
+    temp_df = pd.concat(temp_list, ignore_index=True)
+    temp_df["序号"] = range(1, len(temp_df) + 1)
     temp_df.rename(
         columns={
             "index": "序号",
@@ -1296,7 +1325,7 @@ if __name__ == "__main__":
     print(stock_sector_fund_flow_rank_df)
 
     stock_sector_fund_flow_summary_df = stock_sector_fund_flow_summary(
-        symbol="电源设备", indicator="今日"
+        symbol="文化传媒", indicator="今日"
     )
     print(stock_sector_fund_flow_summary_df)
 
