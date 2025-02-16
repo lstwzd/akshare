@@ -104,8 +104,6 @@ def stock_bid_ask_sina(symbol: str = "000001") -> pd.DataFrame:
     df = df.T.reset_index()
     df.columns = ["item", "value"]
 
-
-
     return df
 
 

@@ -49,6 +49,7 @@ def _convert_timestamp(timestamp_ms):
     返回:
     datetime: 对应的日期和时间，保留到秒
     """
+
     # 将毫秒转换为秒
     timestamp_s = timestamp_ms / 1000
 
@@ -117,22 +118,20 @@ def stock_bid_ask_xq(
             temp_df.columns,
         )
     ]
+    
+    #保持与em, sina统一
+    temp_df['bid'] = temp_df['buy_1']
+    temp_df['ask'] = temp_df['sell_1']
+
     temp_df = temp_df.T.reset_index()
     temp_df.columns = ["item", "value"]
     temp_df.loc[temp_df["item"] == "date_time", "value"] = temp_df.loc[
         temp_df["item"] == "date_time", "value"
     ].apply(lambda x: _convert_timestamp(int(x)))
 
-    #保持与em, sina统一
-    temp_df['bid'] = temp_df['buy_1']
-    temp_df['ask'] = temp_df['sell_1']
-
     return temp_df
 
 
 if __name__ == "__main__":
-    # stock_ask_bid_xq_df = stock_bid_ask_xq(symbol="SH600000")
-    # print(stock_ask_bid_xq_df)
-
-    stock_ask_bid_xq_df = stock_bid_ask_xq(symbol="000001")
+    stock_ask_bid_xq_df = stock_bid_ask_xq(symbol="600036")
     print(stock_ask_bid_xq_df)
