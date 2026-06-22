@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # -*- coding:utf-8 -*-
 """
-Date: 2025/4/1 19:20
+Date: 2025/5/16 19:00
 Desc: 雪球-个股-公司概况-公司简介
 https://xueqiu.com/snowman/S/SH601127/detail#/GSJJ
 """
@@ -28,6 +28,7 @@ def stock_individual_basic_info_xq(
     :rtype: pandas.DataFrame
     """
     from akshare.stock.cons import xq_a_token
+
     xq_a_token = token or xq_a_token
     url = "https://stock.xueqiu.com/v5/stock/f10/cn/company.json"
     params = {
@@ -58,6 +59,7 @@ def stock_individual_basic_info_us_xq(
     :rtype: pandas.DataFrame
     """
     from akshare.stock.cons import xq_a_token
+
     xq_a_token = token or xq_a_token
     url = "https://stock.xueqiu.com/v5/stock/f10/us/company.json"
     params = {
@@ -88,6 +90,7 @@ def stock_individual_basic_info_hk_xq(
     :rtype: pandas.DataFrame
     """
     from akshare.stock.cons import xq_a_token
+
     xq_a_token = token or xq_a_token
     url = "https://stock.xueqiu.com/v5/stock/f10/hk/company.json"
     params = {

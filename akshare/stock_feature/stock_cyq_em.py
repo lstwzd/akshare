@@ -1,17 +1,16 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 """
-Date: 2025/3/9 18:30
+Date: 2025/11/4 18:00
 Desc: 东方财富网-概念板-行情中心-日K-筹码分布
 https://quote.eastmoney.com/concept/sz000001.html
 """
 
-import json
 from datetime import datetime
 
 import pandas as pd
-import requests
 import py_mini_racer
+import requests
 
 
 def stock_cyq_em(symbol: str = "000001", adjust: str = "") -> pd.DataFrame:
@@ -230,11 +229,9 @@ def stock_cyq_em(symbol: str = "000001", adjust: str = "") -> pd.DataFrame:
         "fqt": adjust_dict[adjust],
         "end": datetime.now().date().strftime("%Y%m%d"),
         "lmt": "210",
-        "cb": "quote_jp1",
     }
     r = requests.get(url, params=params)
-    data_json = r.text.strip("quote_jp1(").strip(");")
-    data_json = json.loads(data_json)
+    data_json = r.json()
     temp_df = pd.DataFrame([item.split(",") for item in data_json["data"]["klines"]])
     temp_df.columns = [
         "date",

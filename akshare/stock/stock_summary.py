@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 """
-Date: 2024/9/1 16:00
+Date: 2025/5/5 00:00
 Desc: 股票数据-总貌-市场总貌
 股票数据-总貌-成交概括
 https://www.szse.cn/market/overview/index.html
@@ -62,21 +62,24 @@ def stock_szse_area_summary(date: str = "202203") -> pd.DataFrame:
         "CATALOGID": "1803_sczm",
         "TABKEY": "tab2",
         "DATETIME": "-".join([date[:4], date[4:6]]),
-        "random": "0.39339437497296137",
+        "random": "0.39349437497296137",
     }
     r = requests.get(url, params=params)
     with warnings.catch_warnings(record=True):
         warnings.simplefilter("always")
         temp_df = pd.read_excel(BytesIO(r.content), engine="openpyxl")
-    temp_df.columns = [
-        "序号",
-        "地区",
-        "总交易额",
-        "占市场",
-        "股票交易额",
-        "基金交易额",
-        "债券交易额",
-    ]
+    column_map = {
+        "序号": "序号",
+        "地区": "地区",
+        "总交易额(元)": "总交易额",
+        "占市场%": "占市场",
+        "股票交易额(元)": "股票交易额",
+        "基金交易额(元)": "基金交易额",
+        "债券交易额(元)": "债券交易额",
+        "优先股交易额(元)": "优先股交易额",
+        "期权交易额(元)": "期权交易额",
+    }
+    temp_df.rename(columns=column_map, inplace=True)
     temp_df["总交易额"] = temp_df["总交易额"].str.replace(",", "")
     temp_df["总交易额"] = pd.to_numeric(temp_df["总交易额"], errors="coerce")
     temp_df["占市场"] = pd.to_numeric(temp_df["占市场"], errors="coerce")
@@ -86,6 +89,18 @@ def stock_szse_area_summary(date: str = "202203") -> pd.DataFrame:
     temp_df["基金交易额"] = pd.to_numeric(temp_df["基金交易额"], errors="coerce")
     temp_df["债券交易额"] = temp_df["债券交易额"].str.replace(",", "")
     temp_df["债券交易额"] = pd.to_numeric(temp_df["债券交易额"], errors="coerce")
+    if "优先股交易额" in temp_df.columns:
+        temp_df["优先股交易额"] = temp_df["优先股交易额"].astype(
+            "str"
+        )  # 2025年2月为float
+        temp_df["优先股交易额"] = temp_df["优先股交易额"].str.replace(",", "")
+        temp_df["优先股交易额"] = pd.to_numeric(
+            temp_df["优先股交易额"], errors="coerce"
+        )
+    if "期权交易额" in temp_df.columns:
+        temp_df["期权交易额"] = temp_df["期权交易额"].astype("str")
+        temp_df["期权交易额"] = temp_df["期权交易额"].str.replace(",", "")
+        temp_df["期权交易额"] = pd.to_numeric(temp_df["期权交易额"], errors="coerce")
     return temp_df
 
 
@@ -228,6 +243,8 @@ def stock_sse_deal_daily(date: str = "20241216") -> pd.DataFrame:
     """
     上海证券交易所-数据-股票数据-成交概况-股票成交概况-每日股票情况
     https://www.sse.com.cn/market/stockdata/overview/day/
+    :param date: 交易日
+    :type date: str
     :return: 每日股票情况
     :rtype: pandas.DataFrame
     """
@@ -252,11 +269,21 @@ def stock_sse_deal_daily(date: str = "20241216") -> pd.DataFrame:
         # 20250228
         temp_df.columns = [
             "单日情况",
+            "主板A",
+            "主板B",
+            "科创板",
             "股票",
+        ]
+        temp_df["股票回购"] = "-"
+    elif len(temp_df.columns) == 4:
+        # 20220104
+        temp_df.columns = [
+            "单日情况",
             "主板A",
             "主板B",
             "科创板",
         ]
+        temp_df["股票"] = "-"
         temp_df["股票回购"] = "-"
     else:
         temp_df.columns = [
@@ -322,6 +349,9 @@ if __name__ == "__main__":
     print(stock_szse_summary_df)
 
     stock_szse_area_summary_df = stock_szse_area_summary(date="202412")
+    print(stock_szse_area_summary_df)
+
+    stock_szse_area_summary_df = stock_szse_area_summary(date="202502")
     print(stock_szse_area_summary_df)
 
     stock_szse_sector_summary_df = stock_szse_sector_summary(

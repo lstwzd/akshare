@@ -776,6 +776,71 @@ def stock_kc_a_spot_em() -> pd.DataFrame:
     return temp_df
 
 
+def stock_zh_ab_comparison_em() -> pd.DataFrame:
+    """
+    东方财富网-行情中心-沪深京个股-AB股比价-全部AB股比价
+    https://quote.eastmoney.com/center/gridlist.html#ab_comparison
+    :return: 实时行情
+    :rtype: pandas.DataFrame
+    """
+    url = "https://push2.eastmoney.com/api/qt/clist/get"
+    params = {
+        "np": "1",
+        "fltt": "1",
+        "invt": "2",
+        "fs": "m:1+b:BK0498,m:0+b:BK0498",
+        "fields": "f201,f202,f203,f196,f200,f197,f152,f12,f13,f14,f1,f2,f4,f3,f199",
+        "fid": "f199",
+        "pn": "1",
+        "pz": "100",
+        "po": "1",
+        "dect": "1",
+        "wbp2u": "|0|0|0|web",
+    }
+    columns_map = {
+        "index": "序号",
+        "f1": "-",
+        "f2": "最新价B",
+        "f3": "涨跌幅B",
+        "f4": "-",
+        "f12": "A股代码",
+        "f13": "-",
+        "f14": "A股名称",
+        "f152": "-",
+        "f196": "最新价A",
+        "f197": "涨跌幅A",
+        "f199": "比价",
+        "f200": "-",
+        "f201": "B股代码",
+        "f202": "-",
+        "f203": "B股名称",
+    }
+    temp_df = fetch_paginated_data(url, params)
+    temp_df = temp_df.rename(columns=columns_map)
+    list_name = [value for key, value in columns_map.items() if value != "_"]
+    temp_df = temp_df[list_name]
+    temp_df = temp_df[
+        [
+            "序号",
+            "B股代码",
+            "B股名称",
+            "最新价B",
+            "涨跌幅B",
+            "A股代码",
+            "A股名称",
+            "最新价A",
+            "涨跌幅A",
+            "比价",
+        ]
+    ]
+    temp_df["最新价B"] = pd.to_numeric(temp_df["最新价B"], errors="coerce") / 100
+    temp_df["涨跌幅B"] = pd.to_numeric(temp_df["涨跌幅B"], errors="coerce") / 100
+    temp_df["最新价A"] = pd.to_numeric(temp_df["最新价A"], errors="coerce") / 100
+    temp_df["涨跌幅A"] = pd.to_numeric(temp_df["涨跌幅A"], errors="coerce") / 100
+    temp_df["比价"] = pd.to_numeric(temp_df["比价"], errors="coerce") / 100
+    return temp_df
+
+
 def stock_zh_b_spot_em() -> pd.DataFrame:
     """
     东方财富网- B 股-实时行情

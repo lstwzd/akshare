@@ -33,7 +33,7 @@ def stock_gdfx_free_holding_statistics_em(
         "columns": "ALL",
         "source": "WEB",
         "client": "WEB",
-        "filter": f"""(HOLDNUM_CHANGE_TYPE="001")(END_DATE='{'-'.join([date[:4], date[4:6], date[6:]])}')""",
+        "filter": f"""(HOLDNUM_CHANGE_TYPE="001")(END_DATE='{"-".join([date[:4], date[4:6], date[6:]])}')""",
     }
     r = requests.get(url, params=params)
     data_json = r.json()
@@ -135,7 +135,7 @@ def stock_gdfx_holding_statistics_em(date: str = "20210930") -> pd.DataFrame:
         "columns": "ALL",
         "source": "WEB",
         "client": "WEB",
-        "filter": f"""(HOLDNUM_CHANGE_TYPE="001")(END_DATE='{'-'.join([date[:4], date[4:6], date[6:]])}')""",
+        "filter": f"""(HOLDNUM_CHANGE_TYPE="001")(END_DATE='{"-".join([date[:4], date[4:6], date[6:]])}')""",
     }
     r = requests.get(url, params=params)
     data_json = r.json()
@@ -274,6 +274,8 @@ def stock_gdfx_free_holding_change_em(date: str = "20210930") -> pd.DataFrame:
         "持有个股",
         "-",
         "-",
+        "-",
+        "-",
     ]
     big_df = big_df[
         [
@@ -362,6 +364,8 @@ def stock_gdfx_holding_change_em(date: str = "20210930") -> pd.DataFrame:
         "-",
         "持有个股",
         "流通市值统计",
+        "-",
+        "-",
     ]
     big_df = big_df[
         [
@@ -601,17 +605,20 @@ def stock_gdfx_holding_detail_em(
     :return: 十大股东
     :rtype: pandas.DataFrame
     """
+    import warnings
+
+    warnings.filterwarnings(action="ignore", category=FutureWarning)
     url = "https://datacenter-web.eastmoney.com/api/data/v1/get"
     params = {
         "sortColumns": "NOTICE_DATE,SECURITY_CODE,RANK",
         "sortTypes": "-1,1,1",
-        "pageSize": "500",
+        "pageSize": "50",
         "pageNumber": "1",
         "reportName": "RPT_DMSK_HOLDERS",
         "columns": "ALL",
         "source": "WEB",
         "client": "WEB",
-        "filter": f"""(HOLDER_NEWTYPE="{indicator}")(HOLDNUM_CHANGE_NAME="{symbol}")(END_DATE='{'-'.join([date[:4], date[4:6], date[6:]])}')""",
+        "filter": f"""(HOLDER_NEWTYPE="{indicator}")(HOLDNUM_CHANGE_NAME="{symbol}")(END_DATE='{"-".join([date[:4], date[4:6], date[6:]])}')""",
     }
     r = requests.get(url, params=params)
     data_json = r.json()
@@ -623,7 +630,7 @@ def stock_gdfx_holding_detail_em(
         r = requests.get(url, params=params)
         data_json = r.json()
         temp_df = pd.DataFrame(data_json["result"]["data"])
-        big_df = pd.concat([big_df, temp_df], ignore_index=True)
+        big_df = pd.concat(objs=[big_df, temp_df], ignore_index=True)
 
     big_df.reset_index(inplace=True)
     big_df["index"] = big_df.index + 1
@@ -1038,7 +1045,7 @@ if __name__ == "__main__":
     )
     print(stock_gdfx_free_holding_detail_em_df)
 
-    stock_gdfx_holding_detail_em_df = stock_gdfx_holding_detail_em(date="20210930")
+    stock_gdfx_holding_detail_em_df = stock_gdfx_holding_detail_em(date="20230331")
     print(stock_gdfx_holding_detail_em_df)
 
     stock_gdfx_free_holding_analyse_em_df = stock_gdfx_free_holding_analyse_em(

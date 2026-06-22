@@ -178,6 +178,8 @@ def stock_board_concept_spot_em(symbol: str = "可燃冰") -> pd.DataFrame:
     """
     东方财富网-行情中心-沪深京板块-概念板块-实时行情
     https://quote.eastmoney.com/bk/90.BK0818.html
+    :param symbol: 概念板块代码
+    :type symbol: str
     :return: 概念板块-实时行情
     :rtype: pandas.DataFrame
     """
@@ -250,10 +252,13 @@ def stock_board_concept_hist_em(
         "weekly": "102",
         "monthly": "103",
     }
-    stock_board_concept_em_map = __stock_board_concept_name_em()
-    stock_board_code = stock_board_concept_em_map[
-        stock_board_concept_em_map["板块名称"] == symbol
-    ]["板块代码"].values[0]
+    if re.match(pattern=r"^BK\d+", string=symbol):
+        stock_board_code = symbol
+    else:
+        stock_board_concept_em_map = __stock_board_concept_name_em()
+        stock_board_code = stock_board_concept_em_map[
+            stock_board_concept_em_map["板块名称"] == symbol
+            ]["板块代码"].values[0]
     adjust_map = {"": "0", "qfq": "1", "hfq": "2"}
     url = "https://91.push2his.eastmoney.com/api/qt/stock/kline/get"
     params = {
@@ -324,10 +329,13 @@ def stock_board_concept_hist_min_em(
     :return: 分时历史行情
     :rtype: pandas.DataFrame
     """
-    stock_board_concept_em_map = __stock_board_concept_name_em()
-    stock_board_code = stock_board_concept_em_map[
-        stock_board_concept_em_map["板块名称"] == symbol
-    ]["板块代码"].values[0]
+    if re.match(pattern=r"^BK\d+", string=symbol):
+        stock_board_code = symbol
+    else:
+        stock_board_concept_em_map = __stock_board_concept_name_em()
+        stock_board_code = stock_board_concept_em_map[
+            stock_board_concept_em_map["板块名称"] == symbol
+            ]["板块代码"].values[0]
     if period == "1":
         url = "https://push2his.eastmoney.com/api/qt/stock/trends2/get"
         params = {

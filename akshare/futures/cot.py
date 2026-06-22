@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 """
-Date: 2025/1/10 18:30
+Date: 2025/7/21 15:00
 Desc: 期货-中国-交易所-会员持仓数据接口
 大连商品交易所、上海期货交易所、郑州商品交易所、中国金融期货交易所、广州期货交易所
 采集前 20 会员持仓数据;
@@ -69,7 +69,8 @@ def get_rank_sum_daily(
     :type end_day: str
     :param vars_list: 合约品种如 ['RB'、'AL'] 等列表为空时为所有商品
     :type vars_list: list
-    :return: pd.DataFrame
+    :return:  会员持仓排名数据
+    :rtype: pandas.DataFrame
     symbol                           标的合约                     string
     var                              商品品种                     string
     vol_top5                         成交量前5会员成交量总和         int
@@ -98,7 +99,7 @@ def get_rank_sum_daily(
                     f"{start_day.strftime('%Y-%m-%d')}日交易所数据连接失败，已超过20次，您的地址被网站墙了，请保存好返回数据，稍后从该日期起重试"
                 )
                 return records.reset_index(drop=True)
-            records = pd.concat([records, data], ignore_index=True)
+            records = pd.concat(objs=[records, data], ignore_index=True)
         else:
             warnings.warn(f"{start_day.strftime('%Y%m%d')}非交易日")
         start_day += datetime.timedelta(days=1)
@@ -116,7 +117,8 @@ def get_rank_sum(date: str = "20210525", vars_list: list = cons.contract_symbols
     :type date: date
     :param vars_list: 合约品种如 ['RB', 'AL'] 等列表为空时为所有商品
     :type vars_list: list
-    :return: pd.DataFrame
+    :return: 持仓排名数据
+    :rtype: pandas.DataFrame
     symbol                           标的合约                     string
     var                              商品品种                     string
     vol_top5                         成交量前5会员成交量总和         int
@@ -148,7 +150,7 @@ def get_rank_sum(date: str = "20210525", vars_list: list = cons.contract_symbols
             return False
         big_dict.update(data)
     if len(czce_var) > 0:
-        data = get_czce_rank_table(date)
+        data = get_rank_table_czce(date)
         if data is False:
             return False
         big_dict.update(data)
@@ -306,7 +308,7 @@ def get_shfe_rank_table(
     if date.strftime("%Y%m%d") not in calendar:
         warnings.warn("%s非交易日" % date.strftime("%Y%m%d"))
         return {}
-    url = cons.SHFE_VOL_RANK_URL % (date.strftime("%Y%m%d"))
+    url = cons.SHFE_VOL_RANK_URL_20250701 % (date.strftime("%Y%m%d"))
     r = requests_link(url, encoding="utf-8", headers=cons.shfe_headers)
     try:
         context = json.loads(r.text)
@@ -403,12 +405,15 @@ def _czce_df_read(url, skip_rows, encoding="utf-8", header=0):
     return data
 
 
-def get_czce_rank_table(date: str = "20210428") -> dict:
+def get_rank_table_czce(date: str = "20251103") -> dict:
     """
     郑州商品交易所前 20 会员持仓排名数据明细
+    https://www.czce.com.cn/cn/jysj/ccpm/H077003004index_1.htm
     注：该交易所既公布了品种排名, 也公布了标的排名
     :param date: 日期 format：YYYY-MM-DD 或 YYYYMMDD 或 datetime.date对象 为空时为当天
-    :return: pd.DataFrame
+    :return: 持仓排名数据明细
+    :rtype: pandas.DataFrame
+    返回值格式
     rank                        排名                        int
     vol_party_name              成交量排序的当前名次会员        string(中文)
     vol                         该会员成交量                  int
@@ -435,13 +440,18 @@ def get_czce_rank_table(date: str = "20210428") -> dict:
     if date.strftime("%Y%m%d") not in calendar:
         warnings.warn("%s非交易日" % date.strftime("%Y%m%d"))
         return {}
-    if date >= datetime.date(2015, 10, 8):
+    if date > datetime.date(year=2025, month=11, day=1):
+        url = (
+            f"http://www.czce.com.cn/cn/DFSStaticFiles/Future/{date.year}/"
+            f"{date.isoformat().replace('-', '')}/FutureDataHolding.xlsx"
+        )
+    else:
         url = (
             f"http://www.czce.com.cn/cn/DFSStaticFiles/Future/{date.year}/"
             f"{date.isoformat().replace('-', '')}/FutureDataHolding.xls"
         )
-        r = requests.get(url, headers=headers)
-        temp_df = pd.read_excel(BytesIO(r.content))
+    r = requests.get(url, headers=headers)
+    temp_df = pd.read_excel(BytesIO(r.content))
 
     temp_pinzhong_index = [
         item + 1
@@ -509,7 +519,7 @@ def _get_dce_contract_list(date, var):
     :param var: 合约品种
     :return: list 公布了持仓排名的合约列表
     """
-    url = "http://www.dce.com.cn/publicweb/quotesdata/memberDealPosiQuotes.html"
+    url = "http://portal.dce.com.cn/publicweb/quotesdata/memberDealPosiQuotes.html"
     headers = {
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;"
         "q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -518,7 +528,7 @@ def _get_dce_contract_list(date, var):
         "Cache-Control": "no-cache",
         "Connection": "close",
         "Host": "www.dce.com.cn",
-        "Origin": "http://www.dce.com.cn",
+        "Origin": "http://portal.dce.com.cn",
         "Pragma": "no-cache",
         "Upgrade-Insecure-Requests": "1",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -559,7 +569,10 @@ def get_dce_rank_table(date: str = "20230706", vars_list=cons.contract_symbols) 
     注: 该交易所只公布标的合约排名
     :param date: 日期 format：YYYY-MM-DD 或 YYYYMMDD 或 datetime.date 对象, 为空时为当天
     :param vars_list: 合约品种如 RB、AL 等列表为空时为所有商品, 数据从 20060104 开始，每交易日 16:30 左右更新数据
-    :return: pandas.DataFrame
+    :return: 持仓排名
+    :rtype: pandas.DataFrame
+
+    返回值格式
     rank                        排名                        int
     vol_party_name              成交量排序的当前名次会员      string(中文)
     vol                         该会员成交量                 int
@@ -642,7 +655,7 @@ def get_dce_rank_table(date: str = "20230706", vars_list=cons.contract_symbols) 
                 ].astype(float)
                 big_dict[symbol] = temp_df
             except:  # noqa: E722
-                temp_url = "http://www.dce.com.cn/publicweb/quotesdata/memberDealPosiQuotes.html"
+                temp_url = "http://portal.dce.com.cn/publicweb/quotesdata/memberDealPosiQuotes.html"
                 payload = {
                     "memberDealPosiQuotes.variety": var.lower(),
                     "memberDealPosiQuotes.trade_type": "0",
@@ -707,7 +720,9 @@ def get_cffex_rank_table(date: str = "20190805", vars_list=cons.contract_symbols
     注：该交易所既公布品种排名，也公布标的排名
     :param date: 日期 format：YYYY-MM-DD 或 YYYYMMDD 或 datetime.date对象 为空时为当天
     :param vars_list: 合约品种如RB、AL等列表 为空时为所有商品, 数据从20100416开始，每交易日16:30左右更新数据
-    :return: pd.DataFrame
+    :return: 持仓排名
+    :rtype: pandas.DataFrame
+    :rfield:
     rank                        排名                        int
     vol_party_name              成交量排序的当前名次会员        string(中文)
     vol                         该会员成交量                  int
@@ -721,6 +736,7 @@ def get_cffex_rank_table(date: str = "20190805", vars_list=cons.contract_symbols
     symbol                      标的合约                     string
     var                         品种                        string
     date                        日期                        string YYYYMMDD
+
     """
     vars_list = [i for i in vars_list if i in cons.market_exchange_symbols["cffex"]]
     date = cons.convert_date(date) if date is not None else datetime.date.today()
@@ -816,40 +832,21 @@ def futures_dce_position_rank(
     if date.strftime("%Y%m%d") not in calendar:
         warnings.warn("%s非交易日" % date.strftime("%Y%m%d"))
         return {}
-    url = "http://www.dce.com.cn/publicweb/quotesdata/exportMemberDealPosiQuotesBatchData.html"
-    headers = {
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;"
-        "q=0.8,application/signed-exchange;v=b3;q=0.9",
-        "Accept-Encoding": "gzip, deflate",
-        "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
-        "Cache-Control": "no-cache",
-        "Connection": "keep-alive",
-        "Content-Length": "160",
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Host": "www.dce.com.cn",
-        "Origin": "http://www.dce.com.cn",
-        "Pragma": "no-cache",
-        "Referer": "http://www.dce.com.cn/publicweb/quotesdata/memberDealPosiQuotes.html",
-        "Upgrade-Insecure-Requests": "1",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/81.0.4044.138 Safari/537.36",
-    }
+    date_str = date.strftime("%Y%m%d")
+    url = "http://www.dce.com.cn/dcereport/publicweb/dailystat/memberDealPosi/batchDownload"
     payload = {
-        "memberDealPosiQuotes.variety": "a",
-        "memberDealPosiQuotes.trade_type": "0",
-        "contract.contract_id": "a2009",
-        "contract.variety_id": "a",
-        "year": date.year,
-        "month": date.month - 1,
-        "day": str(date.day).zfill(2),
-        "batchExportFlag": "batch",
+        "tradeDate": date_str,
+        "varietyId": "a",
+        "contractId": "a2601",
+        "tradeType": "1",
+        "lang": "zh",
     }
-    r = requests.post(url, payload, headers=headers)
+    r = requests.post(url, json=payload)
     big_dict = dict()
     with zipfile.ZipFile(BytesIO(r.content), mode="r") as z:
         for i in z.namelist():
-            file_name = i.encode("cp437").decode("GBK")
-            if not file_name.startswith(date.strftime("%Y%m%d")):
+            file_name = i
+            if not file_name.startswith(date_str):
                 continue
             try:
                 data = pd.read_table(z.open(i), header=None, sep="\t")
@@ -1333,14 +1330,14 @@ def futures_gfex_position_rank(date: str = "20231113", vars_list: list = None):
 
 if __name__ == "__main__":
     # 郑州商品交易所
-    get_czce_rank_table_first_df = get_czce_rank_table(date="20230109")
-    print(get_czce_rank_table_first_df)
+    get_rank_table_czce_df = get_rank_table_czce(date="20230109")
+    print(get_rank_table_czce_df)
 
-    get_czce_rank_table_first_df = get_czce_rank_table(date="20201026")
-    print(get_czce_rank_table_first_df)
+    get_rank_table_czce_df = get_rank_table_czce(date="20201026")
+    print(get_rank_table_czce_df)
 
     # 中国金融期货交易所
-    get_cffex_rank_table_df = get_cffex_rank_table(date="20100810")
+    get_cffex_rank_table_df = get_cffex_rank_table(date="20250721")
     print(get_cffex_rank_table_df)
 
     # 上海期货交易所
@@ -1373,12 +1370,12 @@ if __name__ == "__main__":
     print(futures_dce_position_rank_other_df)
 
     # 广州期货交易所
-    futures_gfex_position_rank_df = futures_gfex_position_rank(date="20240729")
+    futures_gfex_position_rank_df = futures_gfex_position_rank(date="20250718")
     print(futures_gfex_position_rank_df)
 
     # 总接口
     get_rank_sum_daily_df = get_rank_sum_daily(
-        start_day="20231010",
-        end_day="20231013",
+        start_day="20251031",
+        end_day="20251103",
     )
     print(get_rank_sum_daily_df)

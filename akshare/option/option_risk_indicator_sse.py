@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
 # !/usr/bin/env python
 """
-Date: 2024/6/27 22:20
+Date: 2025/9/8 16:20
 Desc: 上海证券交易所-产品-股票期权-期权风险指标
 """
 
-import requests
 import pandas as pd
+import requests
 
 
 def option_risk_indicator_sse(date: str = "20240626") -> pd.DataFrame:

@@ -159,7 +159,9 @@ def stock_info_sh_name_code(symbol: str = "主板A股") -> pd.DataFrame:
     temp_df.rename(
         columns={
             col_stock_code: "证券代码",
-            "COMPANY_ABBR": "证券简称",
+            "SEC_NAME_CN": "证券简称",
+            "SEC_NAME_FULL": "证券全称",
+            "COMPANY_ABBR": "公司简称",
             "FULL_NAME": "公司全称",
             "LIST_DATE": "上市日期",
         },
@@ -169,6 +171,8 @@ def stock_info_sh_name_code(symbol: str = "主板A股") -> pd.DataFrame:
         [
             "证券代码",
             "证券简称",
+            "证券全称",
+            "公司简称",
             "公司全称",
             "上市日期",
         ]
@@ -348,7 +352,7 @@ def stock_info_sh_delist(symbol: str = "全部") -> pd.DataFrame:
     return temp_df
 
 
-def stock_info_sz_delist(symbol: str = "暂停上市公司") -> pd.DataFrame:
+def stock_info_sz_delist(symbol: str = "终止上市公司") -> pd.DataFrame:
     """
     深证证券交易所-暂停上市公司-终止上市公司
     https://www.szse.cn/market/stock/suspend/index.html

@@ -3,10 +3,12 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to AKShare's Online Documentation!
+欢迎访问 AKShare 在线文档！
 ===========================================
 
 .. note::
+
+   推荐高性能量化投研框架 AKQuant，欢迎使用：https://github.com/akfamily/akquant
 
    推荐关注微信公众号【数据科学实战】获取更多财经数据与量化投研知识
 
@@ -25,6 +27,7 @@ Welcome to AKShare's Online Documentation!
    data/index
    indicator
    data_tips
+   trade
    answer
    tutorial
    articles

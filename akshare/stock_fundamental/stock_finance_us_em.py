@@ -16,7 +16,7 @@ def __stock_financial_us_report_query_market_em(symbol: str = "TSLA") -> str:
     """
     东方财富-美股-财务分析-三大报表-查询市场
     https://emweb.eastmoney.com/PC_USF10/pages/index.html?code=TSLA&type=web&color=w#/cwfx
-    :param symbol: choice of {"资产负债表", "综合损益表", "现金流量表"}
+    :param symbol: 股票代码
     :type symbol: str
     :return: 查询市场
     :rtype: str
@@ -36,7 +36,6 @@ def __stock_financial_us_report_query_market_em(symbol: str = "TSLA") -> str:
         "client": "PC",
         "v": "04406064331266868",
     }
-
     r = requests.get(url, params=params)
     data_json = r.json()
     stock_code = data_json["result"]["data"][0]["SECUCODE"]
@@ -89,7 +88,11 @@ def __stock_financial_us_report_em(
     if indicator == "年报":
         tuple_data = tuple(item.strip() for item in temp_tuple if "FY" in item)
     elif indicator == "单季报":
-        tuple_data = tuple(item.strip() for item in temp_tuple if "Q1" in item)
+        tuple_data = tuple(
+            item.strip()
+            for item in temp_tuple
+            if any(q in item for q in ["Q1", "Q2", "Q3", "Q4"])
+        )
     elif indicator == "累计季报":
         tuple_data = tuple(
             item.strip() for item in temp_tuple if "Q6" in item or "Q9" in item
@@ -174,11 +177,21 @@ def stock_financial_us_analysis_indicator_em(
         "pageNumber": "",
         "pageSize": "",
         "sortTypes": "-1",
-        "sortColumns": "STD_REPORT_DATE",
-        "source": "F10",
+        "sortColumns": "REPORT_DATE",
+        "source": "SECURITIES",
         "client": "PC",
-        "v": "01975982096513973",
     }
+    if "_" in symbol:
+        params["reportName"] = "RPT_USF10_FN_IMAININDICATOR"
+        params["columns"] = (
+            "ORG_CODE,SECURITY_CODE,SECUCODE,SECURITY_NAME_ABBR,SECURITY_INNER_CODE,"
+            "STD_REPORT_DATE,REPORT_DATE,DATE_TYPE,DATE_TYPE_CODE,REPORT_TYPE,REPORT_DATA_TYPE,"
+            "FISCAL_YEAR,START_DATE,NOTICE_DATE,ACCOUNT_STANDARD,ACCOUNT_STANDARD_NAME,CURRENCY,"
+            "CURRENCY_NAME,ORGTYPE,TOTAL_INCOME,TOTAL_INCOME_YOY,PREMIUM_INCOME,PREMIUM_INCOME_YOY,"
+            "PARENT_HOLDER_NETPROFIT,PARENT_HOLDER_NETPROFIT_YOY,BASIC_EPS_CS,BASIC_EPS_CS_YOY,"
+            "DILUTED_EPS_CS,PAYOUT_RATIO,CAPITIAL_RATIO,ROE,ROE_YOY,ROA,ROA_YOY,DEBT_RATIO,"
+            "DEBT_RATIO_YOY,EQUITY_RATIO"
+        )
     if indicator == "年报":
         params.update({"filter": f"""(SECUCODE="{symbol}")(DATE_TYPE_CODE="001")"""})
     elif indicator == "单季报":
@@ -206,7 +219,7 @@ if __name__ == "__main__":
     print(stock_financial_us_analysis_indicator_em_df)
 
     stock_financial_us_analysis_indicator_em_df = (
-        stock_financial_us_analysis_indicator_em(symbol="TSLA", indicator="单季报")
+        stock_financial_us_analysis_indicator_em(symbol="BRK_A", indicator="单季报")
     )
     print(stock_financial_us_analysis_indicator_em_df)
 
@@ -216,7 +229,7 @@ if __name__ == "__main__":
     print(stock_financial_us_analysis_indicator_em_df)
 
     stock_financial_us_report_em_df = stock_financial_us_report_em(
-        stock="BABA", symbol="资产负债表", indicator="年报"
+        stock="BRK", symbol="资产负债表", indicator="年报"
     )
     print(stock_financial_us_report_em_df)
 
